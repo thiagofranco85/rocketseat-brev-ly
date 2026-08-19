@@ -1,10 +1,9 @@
+import { Home } from './pages/home'
 
 function App() {
-
   return (
-    <div>
-      <h1 className="bg-blue-base">Hello, world!</h1>
-
+    <div className="min-h-screen min-w-[320px] bg-gray-200 font-sans">
+      <Home />
     </div>
   )
 }

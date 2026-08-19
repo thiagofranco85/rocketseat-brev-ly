@@ -34,7 +34,9 @@
 
   --text-sm: 12px;
   --text-sm--line-height: 16px;
+  --text-sm--font-weight: 400;
 
   --text-xs: 10px;
   --text-xs--line-height: 14px;
+  --text-xs--font-weight: 400;
 }
