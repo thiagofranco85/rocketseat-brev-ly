@@ -15,7 +15,7 @@ export function MyLinks({ links, onDelete }: MyLinksProps) {
 
   return (
     <Card>
-      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-5">
+      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-4 lg:pb-5">
         <h2 className="text-lg text-gray-600">Meus links</h2>
 
         <Button
