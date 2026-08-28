@@ -7,7 +7,7 @@ import { Card } from './ui/card'
 
 type MyLinksProps = {
   links: Link[]
-  onDelete: (id: string) => void
+  onDelete: (shortUrl: string) => void
 }
 
 export function MyLinks({ links, onDelete }: MyLinksProps) {

@@ -3,20 +3,31 @@ import { Logo } from '../components/logo'
 import { MyLinks } from '../components/my-links'
 import { NewLinkForm } from '../components/new-link-form'
 import { mockLinks } from '../data/mock-links'
-import type { Link } from '../types/link'
+import type { Link, NewLink } from '../types/link'
 
 export function Home() {
   const [links, setLinks] = useState<Link[]>(mockLinks)
 
-  function handleCreate(link: Omit<Link, 'id' | 'accessCount'>) {
+  // Espelha o que o backend faz antes de gravar: slug em minúsculo e
+  // protocolo implícito na URL original. Some quando a API entrar.
+  function handleCreate(link: NewLink) {
     setLinks((current) => [
       ...current,
-      { ...link, id: crypto.randomUUID(), accessCount: 0 },
+      {
+        ...link,
+        shortUrl: link.shortUrl.toLowerCase(),
+        originalUrl: /^https?:\/\//i.test(link.originalUrl)
+          ? link.originalUrl
+          : `https://${link.originalUrl}`,
+        id: crypto.randomUUID(),
+        accessCount: 0,
+        createdAt: new Date().toISOString(),
+      },
     ])
   }
 
-  function handleDelete(id: string) {
-    setLinks((current) => current.filter((link) => link.id !== id))
+  function handleDelete(shortUrl: string) {
+    setLinks((current) => current.filter((link) => link.shortUrl !== shortUrl))
   }
 
   return (
