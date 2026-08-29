@@ -5,7 +5,7 @@ import { IconButton } from './ui/icon-button'
 
 type LinkItemProps = {
   link: Link
-  onDelete: (id: string) => void
+  onDelete: (shortUrl: string) => void
 }
 
 export function LinkItem({ link, onDelete }: LinkItemProps) {
@@ -43,7 +43,7 @@ export function LinkItem({ link, onDelete }: LinkItemProps) {
         <IconButton
           aria-label={`Excluir ${shortLink}`}
           title="Excluir link"
-          onClick={() => onDelete(link.id)}
+          onClick={() => onDelete(link.shortUrl)}
           icon={<TrashIcon size={16} />}
         />
       </div>

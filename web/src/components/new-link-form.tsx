@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { SHORT_LINK_HOST } from '../config'
-import type { Link } from '../types/link'
+import type { NewLink } from '../types/link'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Input } from './ui/input'
 
 type NewLinkFormProps = {
-  onCreate: (link: Omit<Link, 'id' | 'accessCount'>) => void
+  onCreate: (link: NewLink) => void
 }
 
 export function NewLinkForm({ onCreate }: NewLinkFormProps) {
