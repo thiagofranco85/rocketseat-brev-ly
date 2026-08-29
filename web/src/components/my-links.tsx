@@ -1,4 +1,4 @@
-import { DownloadSimpleIcon } from '@phosphor-icons/react'
+import { DownloadSimpleIcon, SpinnerIcon } from '@phosphor-icons/react'
 import type { Link } from '../types/link'
 import { LinkList } from './link-list'
 import { LinksEmpty } from './links-empty'
@@ -7,11 +7,30 @@ import { Card } from './ui/card'
 
 type MyLinksProps = {
   links: Link[]
+  isLoading: boolean
   onDelete: (shortUrl: string) => void
 }
 
-export function MyLinks({ links, onDelete }: MyLinksProps) {
+export function MyLinks({ links, isLoading, onDelete }: MyLinksProps) {
   const isEmpty = links.length === 0
+
+  // Enquanto a primeira busca não volta, a lista está vazia mas não é um estado
+  // vazio: mostrar "ainda não existem links" aqui faria o empty state piscar.
+  function renderContent() {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center py-6">
+          <SpinnerIcon size={32} className="animate-spin text-gray-400" />
+        </div>
+      )
+    }
+
+    if (isEmpty) {
+      return <LinksEmpty />
+    }
+
+    return <LinkList links={links} onDelete={onDelete} />
+  }
 
   return (
     <Card>
@@ -27,7 +46,7 @@ export function MyLinks({ links, onDelete }: MyLinksProps) {
         </Button>
       </div>
 
-      {isEmpty ? <LinksEmpty /> : <LinkList links={links} onDelete={onDelete} />}
+      {renderContent()}
     </Card>
   )
 }
