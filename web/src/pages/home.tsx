@@ -1,33 +1,40 @@
-import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Logo } from '../components/logo'
 import { MyLinks } from '../components/my-links'
 import { NewLinkForm } from '../components/new-link-form'
-import { mockLinks } from '../data/mock-links'
-import type { Link, NewLink } from '../types/link'
+import { createLink, deleteLink, listLinks } from '../http/links'
+import type { NewLink } from '../types/link'
 
 export function Home() {
-  const [links, setLinks] = useState<Link[]>(mockLinks)
+  const queryClient = useQueryClient()
 
-  // Espelha o que o backend faz antes de gravar: slug em minúsculo e
-  // protocolo implícito na URL original. Some quando a API entrar.
-  function handleCreate(link: NewLink) {
-    setLinks((current) => [
-      ...current,
-      {
-        ...link,
-        shortUrl: link.shortUrl.toLowerCase(),
-        originalUrl: /^https?:\/\//i.test(link.originalUrl)
-          ? link.originalUrl
-          : `https://${link.originalUrl}`,
-        id: crypto.randomUUID(),
-        accessCount: 0,
-        createdAt: new Date().toISOString(),
-      },
-    ])
+  const { data: links = [], isLoading } = useQuery({
+    queryKey: ['links'],
+    queryFn: listLinks,
+  })
+
+  function invalidateLinks() {
+    return queryClient.invalidateQueries({ queryKey: ['links'] })
+  }
+
+  const createMutation = useMutation({
+    mutationFn: createLink,
+    onSuccess: invalidateLinks,
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteLink,
+    onSuccess: invalidateLinks,
+  })
+
+  // `mutateAsync` propaga a rejeição para o formulário, que decide em qual campo
+  // mostrar a mensagem. `mutate` engoliria o erro e o 409 não apareceria.
+  async function handleCreate(link: NewLink) {
+    await createMutation.mutateAsync(link)
   }
 
   function handleDelete(shortUrl: string) {
-    setLinks((current) => current.filter((link) => link.shortUrl !== shortUrl))
+    deleteMutation.mutate(shortUrl)
   }
 
   return (
@@ -38,7 +45,7 @@ export function Home() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr] lg:items-start lg:gap-5">
         <NewLinkForm onCreate={handleCreate} />
-        <MyLinks links={links} onDelete={handleDelete} />
+        <MyLinks links={links} isLoading={isLoading} onDelete={handleDelete} />
       </div>
     </main>
   )
