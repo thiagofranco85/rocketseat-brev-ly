@@ -1,52 +1,133 @@
-import { useState, type FormEvent } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { WarningIcon } from '@phosphor-icons/react'
+import { useForm, useWatch } from 'react-hook-form'
 import { SHORT_LINK_HOST } from '../config'
+import { isApiError } from '../http/client'
+import { newLinkSchema, type NewLinkFormData } from '../schemas/new-link'
 import type { NewLink } from '../types/link'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Input } from './ui/input'
 
 type NewLinkFormProps = {
-  onCreate: (link: NewLink) => void
+  onCreate: (link: NewLink) => Promise<void>
 }
 
+type FieldError = {
+  field: 'originalUrl' | 'shortUrl'
+  message: string
+}
+
+// O backend valida um erro por vez e devolve um `code` estável. Cada código
+// aponta para o campo que o usuário precisa corrigir; o resto (500, payload
+// inválido, rede fora) não tem campo culpado e vira erro de formulário.
+const errorByCode: Record<string, FieldError> = {
+  INVALID_ORIGINAL_URL: {
+    field: 'originalUrl',
+    message: 'Informe uma URL válida.',
+  },
+  INVALID_SHORT_URL: {
+    field: 'shortUrl',
+    message: 'Formato inválido para o link encurtado.',
+  },
+  SHORT_URL_ALREADY_EXISTS: {
+    field: 'shortUrl',
+    message: 'Esse link encurtado já está em uso.',
+  },
+}
+
+const GENERIC_ERROR = 'Não foi possível salvar o link. Tente novamente.'
+
 export function NewLinkForm({ onCreate }: NewLinkFormProps) {
-  const [originalUrl, setOriginalUrl] = useState('')
-  const [shortUrl, setShortUrl] = useState('')
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<NewLinkFormData>({
+    resolver: zodResolver(newLinkSchema),
+    defaultValues: { originalUrl: '', shortUrl: '' },
+  })
 
-  const isEmpty = !originalUrl.trim() || !shortUrl.trim()
+  // O Figma mostra "Salvar link" desabilitado com os campos vazios. É o hook
+  // `useWatch`, e não o `watch()` do useForm, porque o `watch()` devolve uma
+  // função que o React Compiler não consegue memoizar — ele desistiria de
+  // memoizar o componente inteiro.
+  const [originalUrl, shortUrl] = useWatch({
+    control,
+    name: ['originalUrl', 'shortUrl'],
+  })
+  const isEmpty = !originalUrl?.trim() || !shortUrl?.trim()
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleCreate(data: NewLinkFormData) {
+    try {
+      await onCreate({
+        originalUrl: data.originalUrl.trim(),
+        shortUrl: data.shortUrl.trim(),
+      })
 
-    if (isEmpty) return
+      reset()
+    } catch (error) {
+      const fieldError = isApiError(error) ? errorByCode[error.code] : undefined
 
-    onCreate({ originalUrl: originalUrl.trim(), shortUrl: shortUrl.trim() })
-    setOriginalUrl('')
-    setShortUrl('')
+      if (fieldError) {
+        setError(fieldError.field, { message: fieldError.message })
+        return
+      }
+
+      setError('root', { message: GENERIC_ERROR })
+    }
   }
 
   return (
     <Card>
       <h2 className="text-lg text-gray-600">Novo link</h2>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
+      <form
+        onSubmit={handleSubmit(handleCreate)}
+        className="mt-6 flex flex-col gap-5"
+      >
         <Input
           label="Link original"
           placeholder="www.exemplo.com.br"
-          value={originalUrl}
-          onChange={(event) => setOriginalUrl(event.target.value)}
+          error={errors.originalUrl?.message}
+          {...register('originalUrl')}
         />
 
         <Input
           label="Link encurtado"
           placeholder={`${SHORT_LINK_HOST}/`}
-          value={shortUrl}
-          onChange={(event) => setShortUrl(event.target.value)}
+          error={errors.shortUrl?.message}
+          {...register('shortUrl')}
         />
 
-        <Button type="submit" disabled={isEmpty} className="mt-2">
+        {/*
+          O estado de envio vem do `isSubmitting` da RHF, não do `isPending` da
+          mutation. O `isPending` só fica true depois do resolver assíncrono da
+          validação, e um duplo clique chega antes disso — o segundo POST volta
+          409 por causa do UNIQUE de short_url. O `isSubmitting` é marcado no
+          início do handleSubmit, antes de qualquer await.
+        */}
+        <Button
+          type="submit"
+          disabled={isEmpty}
+          loading={isSubmitting}
+          className="mt-2"
+        >
           Salvar link
         </Button>
+
+        {errors.root && (
+          <p
+            role="alert"
+            className="flex items-center gap-2 text-sm text-gray-500"
+          >
+            <WarningIcon size={16} className="shrink-0 text-danger" />
+            {errors.root.message}
+          </p>
+        )}
       </form>
     </Card>
   )

@@ -1,3 +1,4 @@
+import { SpinnerIcon } from '@phosphor-icons/react'
 import type { ComponentProps, ReactNode } from 'react'
 import { tv, type VariantProps } from 'tailwind-variants'
 
@@ -19,19 +20,36 @@ const button = tv({
 type ButtonProps = ComponentProps<'button'> &
   VariantProps<typeof button> & {
     icon?: ReactNode
+    loading?: boolean
   }
 
 export function Button({
   variant,
   icon,
+  loading,
+  disabled,
   children,
   className,
   ...props
 }: ButtonProps) {
   return (
-    <button type="button" className={button({ variant, className })} {...props}>
-      {icon}
-      {children}
+    <button
+      type="button"
+      className={button({ variant, className })}
+      // Sem isto, o duplo clique dispara dois POST e o segundo volta 409 por
+      // causa do UNIQUE de short_url.
+      disabled={disabled || loading}
+      aria-busy={loading}
+      {...props}
+    >
+      {loading ? (
+        <SpinnerIcon size={20} className="animate-spin" />
+      ) : (
+        <>
+          {icon}
+          {children}
+        </>
+      )}
     </button>
   )
 }
