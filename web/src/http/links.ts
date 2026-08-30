@@ -13,6 +13,11 @@ export function createLink(link: NewLink) {
   })
 }
 
+/** 404 `LINK_NOT_FOUND` quando o slug não existe. O servidor normaliza o slug. */
+export function getLinkByShortUrl(shortUrl: string) {
+  return api<Link>(`/links/${encodeURIComponent(shortUrl)}`)
+}
+
 export function deleteLink(shortUrl: string) {
   return api<void>(`/links/${encodeURIComponent(shortUrl)}`, {
     method: 'DELETE',
