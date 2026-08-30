@@ -15,6 +15,12 @@ export function LinkItem({ link, onDelete }: LinkItemProps) {
     navigator.clipboard.writeText(shortLink)
   }
 
+  function handleDelete() {
+    if (window.confirm(`Você tem certeza que deseja apagar o link ${shortLink}?`)) {
+      onDelete(link.shortUrl)
+    }
+  }
+
   return (
     <li className="flex items-center gap-4 py-[18px] lg:gap-5">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -45,7 +51,7 @@ export function LinkItem({ link, onDelete }: LinkItemProps) {
         <IconButton
           aria-label={`Excluir ${shortLink}`}
           title="Excluir link"
-          onClick={() => onDelete(link.shortUrl)}
+          onClick={handleDelete}
           icon={<TrashIcon size={16} />}
         />
       </div>
