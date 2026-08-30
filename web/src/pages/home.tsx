@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Logo } from '../components/logo'
 import { MyLinks } from '../components/my-links'
 import { NewLinkForm } from '../components/new-link-form'
+import { useCardInfo } from '../contexts/card-info'
 import { createLink, deleteLink, listLinks } from '../http/links'
 import type { NewLink } from '../types/link'
 
 export function Home() {
   const queryClient = useQueryClient()
+  const { showCardInfo } = useCardInfo()
 
   const { data: links = [], isLoading } = useQuery({
     queryKey: ['links'],
@@ -24,7 +26,18 @@ export function Home() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteLink,
-    onSuccess: invalidateLinks,
+    // O `shortUrl` chega no segundo argumento do `onSuccess`. O card não pode
+    // sair do `LinkItem`: quando a exclusão termina, aquele item já foi
+    // desmontado da lista e levaria o card junto.
+    onSuccess: (_data, shortUrl) => {
+      invalidateLinks()
+
+      showCardInfo({
+        variant: 'danger',
+        title: 'Link excluído com sucesso',
+        description: `O link ${shortUrl} foi excluído.`,
+      })
+    },
   })
 
   // `mutateAsync` propaga a rejeição para o formulário, que decide em qual campo

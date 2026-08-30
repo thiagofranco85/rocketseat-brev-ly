@@ -96,9 +96,14 @@ export function NewLinkForm({ onCreate }: NewLinkFormProps) {
           {...register('originalUrl')}
         />
 
+        {/*
+          O host é prefixo fixo, não placeholder: fica visível enquanto o
+          usuário digita e não pode ser apagado. Sem `placeholder` aqui, senão
+          o campo vazio mostraria o host duas vezes.
+        */}
         <Input
           label="Link encurtado"
-          placeholder={`${SHORT_LINK_HOST}/`}
+          prefixText={`${SHORT_LINK_HOST}/`}
           error={errors.shortUrl?.message}
           {...register('shortUrl')}
         />

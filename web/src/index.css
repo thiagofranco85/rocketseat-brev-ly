@@ -15,7 +15,41 @@
   --color-gray-600: #1f2025;
 
   /* Colors — Feedback */
+  /*
+    O Style Guide só define `danger`. `warning` e `success` foram derivados:
+    mesma família do #b12c4d e do #2c46b1 (saturação 60%), com a luminosidade
+    baixada até o texto passar de 4.5:1 sobre a própria superfície — no verde e
+    no âmbar os 43% do azul e do vermelho dariam ~4:1. `info` não tem cor
+    própria: usa o azul da marca (blue-base), como no layout.
+  */
   --color-danger: #b12c4d;
+  --color-warning: #8f5b24;
+  --color-success: #1b6f45;
+
+  /* Fundo dos cards de feedback: ~10% do tom sobre branco. */
+  --color-info-surface: #edf1fb;
+  --color-danger-surface: #fbedf1;
+  --color-warning-surface: #fbf5ed;
+  --color-success-surface: #ebf6f1;
+
+  /* Animations */
+  /*
+    Um único relógio para o ciclo de vida do CardInfo: 5s no total, com 300ms
+    (6%) de fade-in e 300ms de fade-out. Quem tira o card da tela é o fim desta
+    animação, não um `setTimeout` em paralelo.
+  */
+  --animate-card-info: card-info 5s ease-in-out forwards;
+
+  @keyframes card-info {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    6%,
+    94% {
+      opacity: 1;
+    }
+  }
 
   /* Typography */
   --font-sans: "Open Sans", sans-serif;

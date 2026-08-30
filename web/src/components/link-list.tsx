@@ -7,7 +7,7 @@ type LinkListProps = {
   onDelete: (shortUrl: string) => void
 }
 
-/** A partir do 9º link a lista rola em vez de crescer. */
+/** A partir do 8º link a lista rola em vez de crescer. */
 const MAX_VISIBLE_LINKS = 7
 
 // Todo LinkItem tem a mesma altura: os dois textos são `truncate`, então nunca
