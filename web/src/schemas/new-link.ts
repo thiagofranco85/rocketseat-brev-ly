@@ -13,8 +13,8 @@ export const newLinkSchema = z.object({
   shortUrl: z
     .string()
     .min(1, 'Informe o link encurtado.')
-    .min(3, 'Use de 3 a 64 caracteres.')
-    .max(64, 'Use de 3 a 64 caracteres.')
+    .min(3, 'Utilize ao menos 3 caracteres.')
+    .max(64, 'Utilize no máximo 64 caracteres.')
     .regex(
       SHORT_URL_PATTERN,
       'Use apenas letras, números e hífen entre palavras.',
