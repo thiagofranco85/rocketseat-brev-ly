@@ -1,5 +1,6 @@
 import { CopyIcon, TrashIcon } from '@phosphor-icons/react'
 import { SHORT_LINK_HOST } from '../config'
+import { useCardInfo } from '../contexts/card-info'
 import type { Link } from '../types/link'
 import { IconButton } from './ui/icon-button'
 
@@ -9,10 +10,29 @@ type LinkItemProps = {
 }
 
 export function LinkItem({ link, onDelete }: LinkItemProps) {
+  const { showCardInfo } = useCardInfo()
+
   const shortLink = `${SHORT_LINK_HOST}/${link.shortUrl}`
 
-  function handleCopy() {
-    navigator.clipboard.writeText(shortLink)
+  // `navigator.clipboard` não existe fora de contexto seguro e a escrita pode
+  // ser negada pelo navegador. Sem o `catch`, a falha ficaria invisível: o
+  // usuário veria o clique não fazer nada.
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(shortLink)
+
+      showCardInfo({
+        variant: 'info',
+        title: 'Link copiado com sucesso',
+        description: `O link ${link.shortUrl} foi copiado para a área de transferência.`,
+      })
+    } catch {
+      showCardInfo({
+        variant: 'danger',
+        title: 'Não foi possível copiar',
+        description: `Copie manualmente o link ${shortLink}.`,
+      })
+    }
   }
 
   function handleDelete() {
