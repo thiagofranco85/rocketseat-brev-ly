@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import logoIcon from '../assets/logo-icon.svg'
 import { Card } from '../components/ui/card'
 import { SHORT_LINK_HOST } from '../config'
 import { isApiError } from '../http/client'
-import { getLinkByShortUrl } from '../http/links'
+import { incrementAccessCount } from '../http/links'
 import { NotFound } from './not-found'
 
 const linkClassName = 'text-blue-base underline hover:text-blue-dark'
@@ -40,17 +40,35 @@ function MessageCard({ title, children }: MessageCardProps) {
 export function Redirect() {
   const { shortUrl } = useParams<{ shortUrl: string }>()
 
-  const { data, error } = useQuery({
-    queryKey: ['link', shortUrl],
-    // O `!` é seguro: o segmento dinâmico da rota compila para `([^\/]+)`, que
-    // exige ao menos um caractere. Sem parâmetro, esta página nem é montada.
-    queryFn: () => getLinkByShortUrl(shortUrl!),
-    // O default do React Query é 3 novas tentativas com backoff exponencial:
-    // um slug inexistente ficaria ~7s em "Redirecionando..." antes de mostrar
-    // o 404. Custo aceito: falha de rede também não é repetida — numa página
-    // cujo único trabalho é sair dela, falhar na hora é melhor que esperar.
-    retry: false,
+  // Qual slug esta instância da página já contou. Em desenvolvimento o
+  // StrictMode monta, desmonta e monta de novo: sem a trava, um acesso só
+  // viraria dois no banco. Guardar o slug, e não um booleano, mantém a trava
+  // correta se a rota trocar de parâmetro sem remontar o componente.
+  const countedShortUrl = useRef<string | null>(null)
+
+  // `useMutation` porque a chamada escreve: ela soma 1 no contador. O valor de
+  // volta é o link já atualizado, então o destino do redirecionamento sai
+  // daqui mesmo — uma requisição só, como no `useQuery` de antes.
+  //
+  // Sem `retry`: o padrão de uma mutation é não repetir, e aqui isso é
+  // correção, não velocidade. Uma resposta perdida depois de o servidor já ter
+  // somado faria a nova tentativa somar de novo.
+  const { data, error, mutate } = useMutation({
+    mutationFn: incrementAccessCount,
   })
+
+  // Contar antes de sair da página, não junto: o `location.replace` abaixo
+  // pode fazer o navegador cancelar uma requisição ainda em voo, e aí o acesso
+  // se perderia. Por isso o redirecionamento só acontece com a resposta na mão.
+  //
+  // O `!` é seguro: o segmento dinâmico da rota compila para `([^\/]+)`, que
+  // exige ao menos um caractere. Sem parâmetro, esta página nem é montada.
+  useEffect(() => {
+    if (countedShortUrl.current === shortUrl) return
+
+    countedShortUrl.current = shortUrl!
+    mutate(shortUrl!)
+  }, [shortUrl, mutate])
 
   const originalUrl = data?.originalUrl
 
