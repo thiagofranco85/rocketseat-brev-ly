@@ -33,7 +33,7 @@ export function Home() {
       invalidateLinks()
 
       showCardInfo({
-        variant: 'danger',
+        variant: 'success',
         title: 'Link excluído com sucesso',
         description: `O link ${shortUrl} foi excluído.`,
       })
