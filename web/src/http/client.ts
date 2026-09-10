@@ -52,7 +52,16 @@ async function readErrorBody(response: Response): Promise<ApiErrorBody> {
   }
 }
 
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+/**
+ * Devolve a `Response` sem tocar no corpo, para quem não recebe JSON — hoje só
+ * o CSV, que precisa da resposta crua para virar blob e ler o
+ * `Content-Disposition`. Fica aqui, e não num `fetch` avulso, porque é o único
+ * jeito de o `ApiError` continuar sendo montado num lugar só.
+ */
+export async function apiRaw(
+  path: string,
+  init?: RequestInit,
+): Promise<Response> {
   const response = await fetch(`${env.VITE_BACKEND_URL}${path}`, {
     ...init,
     // O error handler do backend ignora o `statusCode` do Fastify: sem este
@@ -65,6 +74,12 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) {
     throw new ApiError(await readErrorBody(response), response.status)
   }
+
+  return response
+}
+
+export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await apiRaw(path, init)
 
   // O DELETE responde 204 sem corpo, e `json()` estouraria.
   if (response.status === 204) {
