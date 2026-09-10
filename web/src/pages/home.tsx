@@ -3,7 +3,13 @@ import { Logo } from '../components/logo'
 import { MyLinks } from '../components/my-links'
 import { NewLinkForm } from '../components/new-link-form'
 import { useCardInfo } from '../contexts/card-info'
-import { createLink, deleteLink, listLinks } from '../http/links'
+import {
+  createLink,
+  deleteLink,
+  downloadLinksCsv,
+  listLinks,
+} from '../http/links'
+import { saveBlob } from '../lib/download'
 import type { NewLink } from '../types/link'
 
 export function Home() {
@@ -40,6 +46,18 @@ export function Home() {
     },
   })
 
+  // Sem card no sucesso: o próprio navegador já sinaliza o arquivo baixado.
+  const downloadCsvMutation = useMutation({
+    mutationFn: downloadLinksCsv,
+    onSuccess: ({ blob, fileName }) => saveBlob(blob, fileName),
+    onError: () =>
+      showCardInfo({
+        variant: 'danger',
+        title: 'Não foi possível baixar o CSV',
+        description: 'Tente novamente em alguns instantes.',
+      }),
+  })
+
   // `mutateAsync` propaga a rejeição para o formulário, que decide em qual campo
   // mostrar a mensagem. `mutate` engoliria o erro e o 409 não apareceria.
   async function handleCreate(link: NewLink) {
@@ -50,6 +68,10 @@ export function Home() {
     deleteMutation.mutate(shortUrl)
   }
 
+  function handleDownloadCsv() {
+    downloadCsvMutation.mutate()
+  }
+
   return (
     <main className="mx-auto w-full max-w-[980px] px-3 pt-8 lg:px-0 lg:pt-[88px]">
       <div className="mb-5 flex justify-center lg:mb-8 lg:justify-start">
@@ -58,7 +80,13 @@ export function Home() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr] lg:items-start lg:gap-5">
         <NewLinkForm onCreate={handleCreate} />
-        <MyLinks links={links} isLoading={isLoading} onDelete={handleDelete} />
+        <MyLinks
+          links={links}
+          isLoading={isLoading}
+          onDelete={handleDelete}
+          onDownloadCsv={handleDownloadCsv}
+          isDownloadingCsv={downloadCsvMutation.isPending}
+        />
       </div>
     </main>
   )
