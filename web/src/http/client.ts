@@ -53,15 +53,11 @@ async function readErrorBody(response: Response): Promise<ApiErrorBody> {
 }
 
 /**
- * Devolve a `Response` sem tocar no corpo, para quem não recebe JSON — hoje só
- * o CSV, que precisa da resposta crua para virar blob e ler o
- * `Content-Disposition`. Fica aqui, e não num `fetch` avulso, porque é o único
- * jeito de o `ApiError` continuar sendo montado num lugar só.
+ * Faz a requisição e transforma resposta de erro em `ApiError`, sem tocar no
+ * corpo de sucesso. Separado do `api` para manter a montagem do `ApiError` num
+ * lugar só, mesmo que hoje o `api` seja o único chamador.
  */
-export async function apiRaw(
-  path: string,
-  init?: RequestInit,
-): Promise<Response> {
+async function apiRaw(path: string, init?: RequestInit): Promise<Response> {
   const response = await fetch(`${env.VITE_BACKEND_URL}${path}`, {
     ...init,
     // O error handler do backend ignora o `statusCode` do Fastify: sem este

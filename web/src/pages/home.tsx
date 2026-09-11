@@ -6,10 +6,10 @@ import { useCardInfo } from '../contexts/card-info'
 import {
   createLink,
   deleteLink,
-  downloadLinksCsv,
+  exportLinksCsv,
   listLinks,
 } from '../http/links'
-import { saveBlob } from '../lib/download'
+import { startDownload } from '../lib/download'
 import type { NewLink } from '../types/link'
 
 export function Home() {
@@ -48,8 +48,8 @@ export function Home() {
 
   // Sem card no sucesso: o próprio navegador já sinaliza o arquivo baixado.
   const downloadCsvMutation = useMutation({
-    mutationFn: downloadLinksCsv,
-    onSuccess: ({ blob, fileName }) => saveBlob(blob, fileName),
+    mutationFn: exportLinksCsv,
+    onSuccess: ({ url }) => startDownload(url),
     onError: () =>
       showCardInfo({
         variant: 'danger',
