@@ -46,12 +46,12 @@ export async function routes(app: FastifyInstance) {
     return reply.status(204).send()
   })
 
-  app.get('/exports/links.csv', async (_request, reply) => {
-    const { fileName, content } = await linkCsvExporter.export()
+  // POST, e não GET: cada chamada grava um arquivo novo na CDN, com nome
+  // aleatório. A resposta traz só o endereço — o CSV em si não passa mais pela
+  // API no momento do download.
+  app.post('/exports/links', async (_request, reply) => {
+    const { fileName, url } = await linkCsvExporter.export()
 
-    return reply
-      .header('Content-Type', 'text/csv; charset=utf-8')
-      .header('Content-Disposition', `attachment; filename="${fileName}"`)
-      .send(content)
+    return reply.status(201).send({ fileName, url })
   })
 }
