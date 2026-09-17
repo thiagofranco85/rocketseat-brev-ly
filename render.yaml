@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: free
     branch: feat/deploy-all
-    autoDeployTrigger: commit
+    autoDeployTrigger: checksPass
     dockerfilePath: ./server/Dockerfile
     dockerContext: ./server
     healthCheckPath: /health
@@ -22,4 +22,6 @@ services:
       - key: CLOUDFLARE_BUCKET
         sync: false
       - key: CLOUDFLARE_PUBLIC_URL
+        sync: false
+      - key: WEB_URL
         sync: false
