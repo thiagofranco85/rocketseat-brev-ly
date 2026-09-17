@@ -1,0 +1,25 @@
+services:
+  - name: brevly-server
+    type: web
+    runtime: docker
+    plan: free
+    branch: feat/deploy-all
+    autoDeployTrigger: commit
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "3333"
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_ACCESS_KEY_ID
+        sync: false
+      - key: CLOUDFLARE_SECRET_ACCESS_KEY
+        sync: false
+      - key: CLOUDFLARE_BUCKET
+        sync: false
+      - key: CLOUDFLARE_PUBLIC_URL
+        sync: false
