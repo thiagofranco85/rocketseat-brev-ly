@@ -11,6 +11,14 @@ const envSchema = z.object({
   // o CSV. Não confundir com o endpoint autenticado, que é montado a partir do
   // `CLOUDFLARE_ACCOUNT_ID` e só o servidor usa.
   CLOUDFLARE_PUBLIC_URL: z.url(),
+  // Origem liberada no CORS. Em dev é a porta fixa do Vite (vite.config.ts); em
+  // produção (Render) precisa ser setada pra `https://brevly.thiagofranco.com.br`.
+  // Preprocess pra cair no default também quando a chave existe vazia no `.env`
+  // (padrão deste arquivo), e não só quando está ausente.
+  WEB_URL: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.url().default('http://localhost:5300')
+  ),
 })
 
 export const env = envSchema.parse(process.env)
