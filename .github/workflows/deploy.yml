@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.34.2
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -48,7 +48,7 @@ jobs:
         run: docker build -f server/Dockerfile -t brevly-server:${{ github.sha }} server
 
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@0.34.2
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: brevly-server:${{ github.sha }}
@@ -75,7 +75,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -97,7 +97,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -124,7 +124,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
