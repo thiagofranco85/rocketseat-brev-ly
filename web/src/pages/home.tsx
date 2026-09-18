@@ -78,7 +78,7 @@ export function Home() {
         <Logo />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr] lg:items-start lg:gap-5">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start lg:gap-5">
         <NewLinkForm onCreate={handleCreate} />
         <MyLinks
           links={links}
