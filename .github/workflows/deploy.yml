@@ -28,7 +28,7 @@ jobs:
           scan-ref: .
           format: sarif
           output: trivy-fs.sarif
-          severity: CRITICAL,HIGH
+          severity: CRITICAL,HIGH, MEDIUM, LOW
           ignore-unfixed: true
           exit-code: '0'
 
@@ -54,7 +54,7 @@ jobs:
           image-ref: brevly-server:${{ github.sha }}
           format: sarif
           output: trivy-image.sarif
-          severity: CRITICAL,HIGH
+          severity: CRITICAL,HIGH, MEDIUM, LOW
           ignore-unfixed: true
           exit-code: '0'
 
@@ -156,6 +156,16 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
