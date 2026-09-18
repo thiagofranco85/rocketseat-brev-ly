@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { WarningIcon } from '@phosphor-icons/react'
+import { useEffect, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { SHORT_LINK_HOST } from '../config'
 import { isApiError } from '../http/client'
+import { generateShortUrl } from '../lib/generate-short-url'
 import { newLinkSchema, type NewLinkFormData } from '../schemas/new-link'
 import type { NewLink } from '../types/link'
 import { Button } from './ui/button'
@@ -44,6 +46,8 @@ export function NewLinkForm({ onCreate }: NewLinkFormProps) {
     handleSubmit,
     reset,
     setError,
+    setValue,
+    getValues,
     control,
     formState: { errors, isSubmitting },
   } = useForm<NewLinkFormData>({
@@ -60,6 +64,25 @@ export function NewLinkForm({ onCreate }: NewLinkFormProps) {
     name: ['originalUrl', 'shortUrl'],
   })
   const isEmpty = !originalUrl?.trim() || !shortUrl?.trim()
+
+  // Preenche "Link encurtado" a cada tecla digitada em "Link original". A ref
+  // guarda o último valor gerado automaticamente: só sobrescreve o campo
+  // enquanto ele ainda tiver esse valor. Assim, depois de uma edição manual do
+  // slug, ele para de ser sobrescrito nas teclas seguintes.
+  const lastGeneratedShortUrl = useRef('')
+
+  useEffect(() => {
+    const generated = generateShortUrl(originalUrl ?? '')
+
+    if (getValues('shortUrl') === lastGeneratedShortUrl.current) {
+      setValue('shortUrl', generated, {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+
+    lastGeneratedShortUrl.current = generated
+  }, [originalUrl, getValues, setValue])
 
   async function handleCreate(data: NewLinkFormData) {
     try {
