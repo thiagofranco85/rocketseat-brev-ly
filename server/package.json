@@ -11,7 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "docker:build": "docker build -t brevly-server .",
     "docker:run": "docker run --rm --env-file .env --add-host=host.docker.internal:host-gateway -e DATABASE_URL=postgres://postgres:postgres@host.docker.internal:5433/brevly -p 3333:3333 brevly-server",
-    "trivy": "trivy fs --scanners vuln --skip-dirs node_modules --severity HIGH,CRITICAL,MEDIUM,LOW --exit-code 1 ."
+    "trivy": "trivy fs --scanners vuln --skip-dirs node_modules --vuln-type os,library --format table --severity CRITICAL,HIGH,MEDIUM,LOW --ignore-unfixed --include-dev-deps --exit-code 1 ."
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1129.0",

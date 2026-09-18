@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "trivy": "trivy fs --scanners vuln --skip-dirs node_modules --severity HIGH,CRITICAL,MEDIUM,LOW --exit-code 1 ."
+    "trivy": "trivy fs --scanners vuln --skip-dirs node_modules --vuln-type os,library --format table --severity CRITICAL,HIGH,MEDIUM,LOW --ignore-unfixed --include-dev-deps --exit-code 1 ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
