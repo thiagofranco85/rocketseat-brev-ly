@@ -74,7 +74,10 @@ export function NewLinkForm({ onCreate }: NewLinkFormProps) {
   useEffect(() => {
     const generated = generateShortUrl(originalUrl ?? '')
 
-    if (getValues('shortUrl') === lastGeneratedShortUrl.current) {
+    if (
+      getValues('shortUrl') === lastGeneratedShortUrl.current &&
+      generated !== getValues('shortUrl')
+    ) {
       setValue('shortUrl', generated, {
         shouldValidate: true,
         shouldDirty: true,
